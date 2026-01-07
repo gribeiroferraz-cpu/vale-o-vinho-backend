@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: vale-o-vinho-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: pnpm install && pnpm build
+    startCommand: pnpm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DATABASE_URL
+        sync: false  # Configurar manualmente no dashboard
+      - key: JWT_SECRET
+        generateValue: true  # Gera automaticamente
+      - key: OAUTH_SERVER_URL
+        value: https://oauth.manus.im

@@ -30,6 +30,9 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+  app.get("/", (_req, res) => {
+    res.send("Vale o Vinho Backend OK");
+  });
 
   // Enable CORS for all routes - reflect the request origin to support credentials
   app.use((req, res, next) => {

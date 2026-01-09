@@ -10,11 +10,11 @@ import { createContext } from "./context";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
-    const server = net.createServer();
-    server.listen(port, () => {
-      server.close(() => resolve(true));
+    const probeserver = net.createServer();
+   probeserver.listen(port, () => {
+      probeserver.close(() => resolve(true));
     });
-    server.on("error", () => resolve(false));
+    probeserver.on("error", () => resolve(false));
   });
 }
 

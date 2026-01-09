@@ -18,20 +18,13 @@ function isPortAvailable(port: number): Promise<boolean> {
   });
 }
 
-async function findAvailablePort(startPort: number = 3000): Promise<number> {
-  for (let port = startPort; port < startPort + 20; port++) {
-    if (await isPortAvailable(port)) {
-      return port;
-    }
-  }
-  throw new Error(`No available port found starting from ${startPort}`);
-}
-
 async function startServer() {
   const app = express();
   const server = createServer(app);
+
+  // Root route (para não dar Cannot GET /)
   app.get("/", (_req, res) => {
-    res.send("Vale o Vinho Backend OK");
+    res.status(200).send("Vale o Vinho Backend OK");
   });
 
   // Enable CORS for all routes - reflect the request origin to support credentials
@@ -52,6 +45,7 @@ async function startServer() {
       res.sendStatus(200);
       return;
     }
+
     next();
   });
 
@@ -59,9 +53,7 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
   registerOAuthRoutes(app);
-app.get("/", (_req, res) => {
-  res.send("Vale o Vinho Backend OK");
-});
+
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, timestamp: Date.now() });
   });
@@ -74,7 +66,7 @@ app.get("/", (_req, res) => {
     }),
   );
 
-  const preferredPort = parseInt(process.env.PORT || "3000");
+  const preferredPort = parseInt(process.env.PORT || "3000", 10);
   const port = await findAvailablePort(preferredPort);
 
   if (port !== preferredPort) {
@@ -87,3 +79,4 @@ app.get("/", (_req, res) => {
 }
 
 startServer().catch(console.error);
+

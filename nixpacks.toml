@@ -1,11 +1,11 @@
 [phases.setup]
-nixPkgs = ['nodejs', 'pnpm']
+nixPkgs = ['nodejs_22', 'npm-9_x']
 
 [phases.install]
-cmds = ['pnpm install']
+cmds = ['npm ci --legacy-peer-deps || npm install --legacy-peer-deps']
 
 [phases.build]
-cmds = ['pnpm build']
+cmds = ['npm run build']
 
 [start]
-cmd = 'pnpm start'
+cmd = 'node dist/index.js'

@@ -1,4 +1,4 @@
-# Dockerfile otimizado para Railway com npm
+# Dockerfile otimizado para Vale o Vinho Backend
 # Multi-stage build para reduzir tamanho da imagem final
 
 # Stage 1: Build
@@ -10,18 +10,18 @@ RUN apk add --no-cache python3 make g++
 # Definir diretório de trabalho
 WORKDIR /app
 
-# Copiar package files
-COPY package*.json ./
-COPY tsconfig.json ./
+# Copiar apenas arquivos de configuração primeiro (melhor cache)
+COPY package.json package-lock.json tsconfig.json ./
 
-# Instalar dependências com npm (usando legacy-peer-deps)
-RUN npm ci --legacy-peer-deps --only=production && \
-    npm ci --legacy-peer-deps
+# Instalar TODAS as dependências (dev + prod) para o build
+RUN npm ci --legacy-peer-deps
 
 # Copiar código fonte
-COPY . .
+COPY server ./server
+COPY drizzle ./drizzle
+COPY shared ./shared
 
-# Build do TypeScript
+# Build do TypeScript com esbuild
 RUN npm run build
 
 # Stage 2: Production
@@ -38,7 +38,7 @@ RUN addgroup -g 1001 -S nodejs && \
 WORKDIR /app
 
 # Copiar package files
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
 # Instalar apenas dependências de produção
 RUN npm ci --legacy-peer-deps --only=production && \
@@ -53,6 +53,10 @@ USER nodejs
 
 # Expor porta (Railway injeta a variável PORT)
 EXPOSE 3000
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Usar tini como init system
 ENTRYPOINT ["/sbin/tini", "--"]

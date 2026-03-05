@@ -68,6 +68,10 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     } else if (user.openId === ENV.ownerOpenId) {
       values.role = "admin";
       updateSet.role = "admin";
+    } else if (ENV.adminEmail && user.email && user.email.toLowerCase() === ENV.adminEmail.toLowerCase()) {
+      // Promote user to admin if their email matches ADMIN_EMAIL env var
+      values.role = "admin";
+      updateSet.role = "admin";
     } else {
       // Check if this is the first user in the database
       const existingUsers = await db.select().from(users).limit(1);

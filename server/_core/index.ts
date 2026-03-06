@@ -58,9 +58,18 @@ async function startServer() {
         return;
       }
       const conn = await mysql.createConnection(dbUrl);
-      await conn.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripeCustomerId VARCHAR(255) NULL`);
-      await conn.end();
-      res.json({ ok: true, message: "Migration completed: stripeCustomerId added" });
+      // Check if column already exists
+      const [rows] = await conn.execute(
+        `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'stripeCustomerId'`
+      ) as any;
+      if (rows.length === 0) {
+        await conn.execute(`ALTER TABLE users ADD COLUMN stripeCustomerId VARCHAR(255) NULL`);
+        await conn.end();
+        res.json({ ok: true, message: "Migration completed: stripeCustomerId column added" });
+      } else {
+        await conn.end();
+        res.json({ ok: true, message: "Column stripeCustomerId already exists, no migration needed" });
+      }
     } catch (error: any) {
       res.json({ ok: false, error: error.message });
     }

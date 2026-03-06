@@ -48,6 +48,23 @@ async function startServer() {
   registerOAuthRoutes(app);
   registerStripeRoutes(app as any);
 
+  // ✅ AUTO-MIGRATION: Add missing columns on startup
+  app.get("/api/migrate", async (_req, res) => {
+    try {
+      const { getDb } = await import("../db");
+      const db = await getDb();
+      if (!db) {
+        res.json({ ok: false, error: "Database not available" });
+        return;
+      }
+      // Add stripeCustomerId column if it doesn't exist
+      await (db as any).execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripeCustomerId VARCHAR(255) NULL`);
+      res.json({ ok: true, message: "Migration completed" });
+    } catch (error: any) {
+      res.json({ ok: false, error: error.message });
+    }
+  });
+
   app.use(
     "/api/trpc",
     createExpressMiddleware({

@@ -46,6 +46,18 @@ async function startServer() {
   });
 
   registerOAuthRoutes(app);
+
+  // ─── AUTH MIDDLEWARE: inject user into req for Stripe routes ─────────────
+  app.use(async (req: any, _res, next) => {
+    try {
+      const { sdk } = await import("./sdk");
+      req.user = await sdk.authenticateRequest(req);
+    } catch {
+      req.user = null;
+    }
+    next();
+  });
+
   registerStripeRoutes(app as any);
 
   // ✅ AUTO-MIGRATION: Add missing columns using raw mysql2

@@ -3,6 +3,7 @@ import express from "express";
 import { createServer } from "http";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
+import { registerStripeRoutes } from "../stripeRoutes";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 
@@ -45,6 +46,7 @@ async function startServer() {
   });
 
   registerOAuthRoutes(app);
+  registerStripeRoutes(app as any);
 
   app.use(
     "/api/trpc",

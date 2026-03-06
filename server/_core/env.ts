@@ -9,6 +9,11 @@ export const ENV = {
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   // Admin email override
   adminEmail: process.env.ADMIN_EMAIL ?? "",
+  // Stripe
+  stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
+  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
+  stripeMonthlyPriceId: process.env.STRIPE_MONTHLY_PRICE_ID ?? "price_1Swr89IjWmB7gtGQgaZCl3Dx",
+  stripeYearlyPriceId: process.env.STRIPE_YEARLY_PRICE_ID ?? "price_1Swr89IjWmB7gtGQ648lVB15",
   // Google OAuth
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",

@@ -48,18 +48,19 @@ async function startServer() {
   registerOAuthRoutes(app);
   registerStripeRoutes(app as any);
 
-  // ✅ AUTO-MIGRATION: Add missing columns on startup
+  // ✅ AUTO-MIGRATION: Add missing columns using raw mysql2
   app.get("/api/migrate", async (_req, res) => {
     try {
-      const { getDb } = await import("../db");
-      const db = await getDb();
-      if (!db) {
-        res.json({ ok: false, error: "Database not available" });
+      const mysql = await import("mysql2/promise");
+      const dbUrl = process.env.DATABASE_URL ?? process.env.MYSQL_URL ?? "";
+      if (!dbUrl) {
+        res.json({ ok: false, error: "No database URL" });
         return;
       }
-      // Add stripeCustomerId column if it doesn't exist
-      await (db as any).execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripeCustomerId VARCHAR(255) NULL`);
-      res.json({ ok: true, message: "Migration completed" });
+      const conn = await mysql.createConnection(dbUrl);
+      await conn.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripeCustomerId VARCHAR(255) NULL`);
+      await conn.end();
+      res.json({ ok: true, message: "Migration completed: stripeCustomerId added" });
     } catch (error: any) {
       res.json({ ok: false, error: error.message });
     }
